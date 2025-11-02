@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste Planilha Google</title>
+</head>
+<body>
+  <h1>Dados da Planilha</h1>
+  <pre id="saida">Carregando...</pre>
+
+  <script>
+    const endpoint = "https://script.google.com/macros/s/AKfycbyt8YBXuAgknbjv4muTXQ1LnC8jn4k7CqvGg0RZX9XM-g_Va4lzYlhYMoYSSROaTE04/exec"; // link do seu Web App
+
+    fetch(endpoint)
+      .then(res => res.json())
+      .then(dados => {
+        document.getElementById("saida").textContent = JSON.stringify(dados, null, 2);
+      })
+      .catch(err => {
+        document.getElementById("saida").textContent = "Erro: " + err;
+      });
+  </script>
+</body>
+</html>
