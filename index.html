@@ -7,33 +7,17 @@
 </head>
 <body>
   <script>
-    async function submitContactForm(formData) {
-      try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbztfKURJaLy6bMvHMiXRKQ8Nldqu2ooMrgZEn7gvGlNMlFgYxBEWGPTpuEECtRvI04G/exec', {
-          method: 'POST',
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            message: formData.message
-          })
-        });
-
-        const result = await response.json();
-        if (result.status === 'success') {
-          alert('Message sent successfully!');
-        } else {
-          alert('Error: ' + result.message);
-        }
-      } catch (error) {
-        alert('Failed to submit form: ' + error.message);
-      }
+    function submitContactForm() {
+fetch('https://script.google.com/macros/s/AKfycbwMjWlGPYuPKkVR0NrtKFnavmedt3ee8PIJa_aRW-a4xfd62FCCRZqFmk6r7QDfwGoo/exec', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'text/plain;charset=utf-8',
+  },
+  body: JSON.stringify(yourData),
+});
     }
 
-    submitContactForm({
-      name: "Alex Silva",
-      email: "teste@teste.com",
-      message: "ABC123"
-    })
+    submitContactForm()
   </script>
 </body>
 </html>
