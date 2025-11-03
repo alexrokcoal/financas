@@ -6,15 +6,34 @@
   <title>Teste Planilha Google</title>
 </head>
 <body>
-  <iframe
-    src="https://script.google.com/macros/s/AKfycbzl-aEE1Xez58iT1Jq2b1jOwg1BO9K5Jhi8hl96Oi0VBrFdRcdF6XggYbShiNhiiNZQPQ/exec"
-    style="
-      border: none;
-      width: 100%;
-      height: 700px;
-      transform: translateY(-40px);
-      overflow: hidden;
-    "
-  ></iframe>
+  <script>
+    async function submitContactForm(formData) {
+      try {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbwQ3QB6YUQpJo3RfAq1c0f56ohQD5OnF_aht8NV1pIsRePnh9kXQ9677BhHUal6fzYv/exec', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            message: formData.message
+          })
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+          alert('Message sent successfully!');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      } catch (error) {
+        alert('Failed to submit form: ' + error.message);
+      }
+    }
+
+    submitContactForm({
+      name: "Alex Silva",
+      email: "teste@teste.com",
+      message: "ABC123"
+    })
+  </script>
 </body>
 </html>
