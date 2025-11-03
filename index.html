@@ -6,20 +6,15 @@
   <title>Teste Planilha Google</title>
 </head>
 <body>
-  <h1>Dados da Planilha</h1>
-  <pre id="saida">Carregando...</pre>
-
-  <script>
-    const endpoint = "https://script.google.com/macros/s/AKfycbxIbwUKr71NeXvAAe8ljLf-DQeQjeYPaVbsKd2khoBTALuD1TXlPVs-MsmAsUo26WhG/exec"; // link do seu Web App
-
-    fetch(endpoint)
-      .then(res => res.json())
-      .then(dados => {
-        document.getElementById("saida").textContent = JSON.stringify(dados, null, 2);
-      })
-      .catch(err => {
-        document.getElementById("saida").textContent = "Erro: " + err;
-      });
-  </script>
+  <iframe
+    src="https://script.google.com/macros/s/AKfycbzl-aEE1Xez58iT1Jq2b1jOwg1BO9K5Jhi8hl96Oi0VBrFdRcdF6XggYbShiNhiiNZQPQ/exec"
+    style="
+      border: none;
+      width: 100%;
+      height: 700px;
+      transform: translateY(-40px);
+      overflow: hidden;
+    "
+  ></iframe>
 </body>
 </html>
