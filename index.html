@@ -8,10 +8,10 @@
 <body>
   <script>
     function submitContactForm() {
-      fetch("https://script.google.com/macros/s/AKfycbzPk1QQ2r01RwBpwr3GAlSx9diIgCry0e-u895KfsB_WTi8M5XE-L9hAespH-FvN5FU/exec", { 
+      fetch("https://script.google.com/macros/s/AKfycby_6bJNlQ3xKjLuNY1hDi9CFEluBViTsxUum50ees6fUd43a55GZMtnU_NTL161YrbX/exec", { 
           method: "POST", 
           redirect: "follow", 
-          body: JSON.stringify(data), 
+          body: JSON.stringify({name: "Alex Silva"}), 
           headers: { "Content-Type": "text/plain", }
         })
         .then(response => { 
