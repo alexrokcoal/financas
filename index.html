@@ -10,7 +10,6 @@
     function submitContactForm() {
       fetch("https://script.google.com/macros/s/AKfycbzqfdnaqnHsgtlnVNBxvd51j7MZRUtvpsvZ_Gc_DXAAfE3bBr2M9xJ8AcmUQilwliE/exec", {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: "Alex Silva",
