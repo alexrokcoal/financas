@@ -13,7 +13,7 @@
       console.log("Token recebido do Google:", googleToken);
 
       // Envia para o Apps Script validar
-      fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
+      fetch("https://script.google.com/macros/s/AKfycbz9ikhizyE0Mb3wLKP_0vW2AqjekoXHjU6BX59_LdCR2jq6LvdMg1NS42zC2sKppVDv/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: googleToken })
