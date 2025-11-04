@@ -43,7 +43,7 @@ function enviarLancamento() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      id_token: userToken, // reaproveita o mesmo token do login
+      id_token: googleToken, // reaproveita o mesmo token do login
       action: "salvarLancamento",
       dados
     })
