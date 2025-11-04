@@ -8,13 +8,15 @@
 <body>
   <script>
     function submitContactForm() {
-fetch('https://script.google.com/macros/s/AKfycbyGVw9AFxxv1vqv5fRb7rBnmnN1EkEzUxlQQM2AR1tjX1mr4S3-XThzs7NjQxxz0ATJ/exec', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'text/plain;charset=utf-8',
-  },
-  body: JSON.stringify("Alex"),
-});
+      fetch("https://script.google.com/macros/s/AKfycbzPk1QQ2r01RwBpwr3GAlSx9diIgCry0e-u895KfsB_WTi8M5XE-L9hAespH-FvN5FU/exec", { 
+          method: "POST", 
+          redirect: "follow", 
+          body: JSON.stringify(data), 
+          headers: { "Content-Type": "text/plain", }
+        })
+        .then(response => { 
+          console.log(response);
+      });
     }
 
     submitContactForm()
