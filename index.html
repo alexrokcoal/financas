@@ -6,22 +6,30 @@
   <title>Login com Google</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
-   let userToken = null;
+    let googleToken = null;
 
-function handleCredentialResponse(response) {
-  userToken = response.credential;
+    function handleCredentialResponse(response) {
+      googleToken = response.credential;
+      console.log("Token recebido do Google:", googleToken);
 
-  // Valida login inicial
-  fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id_token: userToken })
-  })
-  .then(r => r.json())
-  .then(data => {
-    console.log("Login válido:", data);
-  });
-}
+      // Envia para o Apps Script validar
+      fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: googleToken })
+      })
+      .then(r => r.json())
+      .then(data => {
+        console.log("Login validado:", data);
+        document.getElementById("output").innerText =
+          "✅ Logado como: " + (data.email || data.user) + "\n\nAgora você pode enviar dados.";
+
+        // Exibe o botão de envio
+        document.getElementById("btnSendData").style.display = "inline-block";
+      })
+      .catch(err => console.error(err));
+    }
+
 
 // Exemplo de nova chamada autenticada
 function enviarLancamento() {
@@ -43,7 +51,6 @@ function enviarLancamento() {
   .then(r => r.json())
   .then(console.log);
 }
-
   </script>
 </head>
 <body>
