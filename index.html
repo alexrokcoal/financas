@@ -8,14 +8,15 @@
 <body>
   <script>
     function submitContactForm() {
-      fetch("https://script.google.com/macros/s/AKfycby_6bJNlQ3xKjLuNY1hDi9CFEluBViTsxUum50ees6fUd43a55GZMtnU_NTL161YrbX/exec", { 
-          method: "POST", 
-          redirect: "follow", 
-          body: JSON.stringify({name: "Alex Silva"}), 
-          headers: { "Content-Type": "text/plain", }
+      fetch("https://script.google.com/macros/s/AKfycbzqfdnaqnHsgtlnVNBxvd51j7MZRUtvpsvZ_Gc_DXAAfE3bBr2M9xJ8AcmUQilwliE/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Alex Silva",
+          email: "teste@teste.com",
+          message: "ABC123"
         })
-        .then(response => { 
-          console.log(response);
       });
     }
 
