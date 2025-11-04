@@ -1,62 +1,48 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <title>Exemplo Login Google + Proxy Worker</title>
-</head>
-<body>
-  <h1>Autenticação Google</h1>
-  <div id="buttonDiv"></div>
-  <button id="callApi">Chamar API Protegida</button>
-  <pre id="output"></pre>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login com Google</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
-    const CLIENT_ID = "954634376637-r0qfsdbjbqpbrr13pi9tu93j8gu65056.apps.googleusercontent.com"; // substitua
-
-    // Callback chamado quando o usuário faz login (recebe ID Token)
     function handleCredentialResponse(response) {
-      // response.credential é o ID token (JWT)
-      window.sessionStorage.setItem("google_id_token", response.credential);
-      document.getElementById("output").textContent =
-        "Logado. ID token salvo em sessionStorage (válido ~1h).";
+      // response.credential contém o token JWT
+      console.log("Token recebido do Google:", response.credential);
+
+      // Envia para o Apps Script validar
+      fetch("https://script.google.com/macros/s/AKfycbxZHeVNXkR5DT5SpWbNMyK58Bl89yQK2eRKmz_UWC7d_4iU07gXJNBpVwSDKH6QNgq7/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: response.credential })
+      })
+      .then(r => r.json())
+      .then(data => {
+        console.log("Resposta do backend:", data);
+        document.getElementById("output").innerText = JSON.stringify(data, null, 2);
+      })
+      .catch(err => console.error(err));
     }
-
-    window.onload = () => {
-      google.accounts.id.initialize({
-        client_id: CLIENT_ID,
-        callback: handleCredentialResponse,
-      });
-
-      google.accounts.id.renderButton(
-        document.getElementById("buttonDiv"),
-        { theme: "outline", size: "large" }
-      );
-    };
-
-    document.getElementById("callApi").addEventListener("click", async () => {
-      const token = window.sessionStorage.getItem("google_id_token");
-      if (!token) {
-        alert("Faça login primeiro.");
-        return;
-      }
-
-      try {
-        const res = await fetch("https://gas-proxy.alexro-kcoal.workers.dev/", {
-          method: "GET",
-          headers: {
-            "Authorization": "Bearer " + token,
-            "Accept": "application/json"
-          },
-          // include credentials only if you need cookies; for tokens, not needed
-        });
-
-        const text = await res.text();
-        document.getElementById("output").textContent = `Status: ${res.status}\n\n${text}`;
-      } catch (err) {
-        document.getElementById("output").textContent = "Erro: " + String(err);
-      }
-    });
   </script>
+</head>
+<body>
+  <h1>Login com Google</h1>
+  
+  <div id="g_id_onload"
+       data-client_id="954634376637-r0qfsdbjbqpbrr13pi9tu93j8gu65056.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse"
+       data-auto_prompt="false">
+  </div>
+
+  <div class="g_id_signin"
+       data-type="standard"
+       data-size="large"
+       data-theme="outline"
+       data-text="signin_with"
+       data-shape="rectangular"
+       data-logo_alignment="left">
+  </div>
+
+  <pre id="output"></pre>
 </body>
 </html>
