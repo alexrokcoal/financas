@@ -6,20 +6,53 @@
   <title>Login com Google</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
+    let googleToken = null;
+
     function handleCredentialResponse(response) {
-      // response.credential contém o token JWT
-      console.log("Token recebido do Google:", response.credential);
+      googleToken = response.credential;
+      console.log("Token recebido do Google:", googleToken);
 
       // Envia para o Apps Script validar
       fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: response.credential })
+        body: JSON.stringify({ token: googleToken })
       })
       .then(r => r.json())
       .then(data => {
-        console.log("Resposta do backend:", data);
-        document.getElementById("output").innerText = JSON.stringify(data, null, 2);
+        console.log("Login validado:", data);
+        document.getElementById("output").innerText =
+          "✅ Logado como: " + (data.email || data.user) + "\n\nAgora você pode enviar dados.";
+
+        // Exibe o botão de envio
+        document.getElementById("btnSendData").style.display = "inline-block";
+      })
+      .catch(err => console.error(err));
+    }
+
+    function sendData() {
+      if (!googleToken) {
+        alert("Faça login antes!");
+        return;
+      }
+
+      // Exemplo de nova chamada com dados
+      fetch("https://gas-proxy.alexro-kcoal.workers.dev/api/save", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${googleToken}` // envia o mesmo token!
+        },
+        body: JSON.stringify({
+          nome: "Alex Silva",
+          valor: 123,
+          mensagem: "Teste autenticado"
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        console.log("Resposta da API:", data);
+        alert("Servidor respondeu: " + JSON.stringify(data));
       })
       .catch(err => console.error(err));
     }
@@ -27,7 +60,7 @@
 </head>
 <body>
   <h1>Login com Google</h1>
-  
+
   <div id="g_id_onload"
        data-client_id="954634376637-r0qfsdbjbqpbrr13pi9tu93j8gu65056.apps.googleusercontent.com"
        data-callback="handleCredentialResponse"
@@ -42,6 +75,8 @@
        data-shape="rectangular"
        data-logo_alignment="left">
   </div>
+
+  <button id="btnSendData" style="display:none;" onclick="sendData()">Enviar dados autenticados</button>
 
   <pre id="output"></pre>
 </body>
