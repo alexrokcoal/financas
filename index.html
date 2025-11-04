@@ -6,56 +6,44 @@
   <title>Login com Google</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
-    let googleToken = null;
+   let userToken = null;
 
-    function handleCredentialResponse(response) {
-      googleToken = response.credential;
-      console.log("Token recebido do Google:", googleToken);
+function handleCredentialResponse(response) {
+  userToken = response.credential;
 
-      // Envia para o Apps Script validar
-      fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: googleToken })
-      })
-      .then(r => r.json())
-      .then(data => {
-        console.log("Login validado:", data);
-        document.getElementById("output").innerText =
-          "✅ Logado como: " + (data.email || data.user) + "\n\nAgora você pode enviar dados.";
+  // Valida login inicial
+  fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id_token: userToken })
+  })
+  .then(r => r.json())
+  .then(data => {
+    console.log("Login válido:", data);
+  });
+}
 
-        // Exibe o botão de envio
-        document.getElementById("btnSendData").style.display = "inline-block";
-      })
-      .catch(err => console.error(err));
-    }
+// Exemplo de nova chamada autenticada
+function enviarLancamento() {
+  const dados = {
+    descricao: "Café da manhã",
+    valor: 12.5,
+    tipo: "Despesa"
+  };
 
-    function sendData() {
-      if (!googleToken) {
-        alert("Faça login antes!");
-        return;
-      }
+  fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id_token: userToken, // reaproveita o mesmo token do login
+      action: "salvarLancamento",
+      dados
+    })
+  })
+  .then(r => r.json())
+  .then(console.log);
+}
 
-      // Exemplo de nova chamada com dados
-      fetch("https://gas-proxy.alexro-kcoal.workers.dev/api/save", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${googleToken}` // envia o mesmo token!
-        },
-        body: JSON.stringify({
-          nome: "Alex Silva",
-          valor: 123,
-          mensagem: "Teste autenticado"
-        })
-      })
-      .then(r => r.json())
-      .then(data => {
-        console.log("Resposta da API:", data);
-        alert("Servidor respondeu: " + JSON.stringify(data));
-      })
-      .catch(err => console.error(err));
-    }
   </script>
 </head>
 <body>
