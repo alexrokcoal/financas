@@ -11,7 +11,7 @@
       console.log("Token recebido do Google:", response.credential);
 
       // Envia para o Apps Script validar
-      fetch("https://script.google.com/macros/s/AKfycbxZHeVNXkR5DT5SpWbNMyK58Bl89yQK2eRKmz_UWC7d_4iU07gXJNBpVwSDKH6QNgq7/exec", {
+      fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: response.credential })
