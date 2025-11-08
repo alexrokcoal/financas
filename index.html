@@ -83,5 +83,20 @@ statusEl.textContent += '\nResposta da Sheets API:\n' + JSON.stringify(data, nul
 }, { once: false });
 });
 </script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const token = params.get("token");
+
+if (token) {
+  localStorage.setItem("google_token", token);
+  document.getElementById("login").innerText = "✅ Conectado ao Google Sheets!";
+} else {
+  document.getElementById("login").addEventListener("click", () => {
+    window.location.href = "https://gas-proxy.alexro-kcoal.workers.dev/login";
+  });
+}
+</script>
+
 </body>
 </html>
