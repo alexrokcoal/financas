@@ -3,113 +3,84 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Google Sheets OAuth Demo</title>
+<title>Sheets OAuth Demo</title>
 </head>
 <body>
-<h1>Demo: Google Sheets com Cloudflare + GitHub Pages</h1>
-
+<h1>Entrar com Google (Sheets)</h1>
 <button id="login">Entrar com Google</button>
-<button id="logout" style="display:none;">Sair</button>
 <pre id="status"></pre>
 
+
 <script>
+// Substitua pelo seu CLIENT_ID (público) e pelo REDIRECT (Worker)
 const CLIENT_ID = '954634376637-r0qfsdbjbqpbrr13pi9tu93j8gu65056.apps.googleusercontent.com';
 const REDIRECT_URI = 'https://gas-proxy.alexro-kcoal.workers.dev/callback';
-const WORKER_URL = 'https://gas-proxy.alexro-kcoal.workers.dev';
 const SCOPES = [
-  'openid',
-  'profile',
-  'email',
-  'https://www.googleapis.com/auth/spreadsheets'
+'openid',
+'profile',
+'email',
+'https://www.googleapis.com/auth/spreadsheets'
 ].join(' ');
 
+
 const statusEl = document.getElementById('status');
-const loginBtn = document.getElementById('login');
-const logoutBtn = document.getElementById('logout');
 
-// Função pra gerar state seguro
+
 function randomState(len = 16) {
-  const arr = new Uint8Array(len);
-  crypto.getRandomValues(arr);
-  return Array.from(arr, dec => ('0' + dec.toString(16)).slice(-2)).join('');
+const arr = new Uint8Array(len);
+crypto.getRandomValues(arr);
+return Array.from(arr, dec => ('0' + dec.toString(16)).slice(-2)).join('');
 }
 
-// Checa se já tem sessão
-const savedState = localStorage.getItem('oauth_state_key');
-if (savedState) {
-  loginBtn.innerText = '✅ Conectado ao Google Sheets';
-  logoutBtn.style.display = 'inline';
-  statusEl.textContent = 'Sessão ativa. State: ' + savedState;
+
+document.getElementById('login').addEventListener('click', () => {
+const state = randomState(12);
+// Armazene localmente o state para validar se quiser
+localStorage.setItem('oauth_state', state);
+
+
+const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+authUrl.searchParams.set('client_id', CLIENT_ID);
+authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
+authUrl.searchParams.set('response_type', 'code');
+authUrl.searchParams.set('scope', SCOPES);
+authUrl.searchParams.set('access_type', 'offline'); // importante para refresh_token
+authUrl.searchParams.set('prompt', 'consent'); // força pedir refresh_token
+authUrl.searchParams.set('state', state);
+
+
+// Abre popup
+const w = window.open(authUrl.toString(), 'google_oauth', 'width=600,height=700');
+
+
+// Ouça mensagem do popup (Worker irá postar mensagem com { state })
+window.addEventListener('message', async (ev) => {
+if (!ev.data || ev.data.source !== 'oauth_worker') return;
+const { state: returnedState } = ev.data;
+if (returnedState !== localStorage.getItem('oauth_state')) {
+statusEl.textContent = 'State mismatch — abort.';
+return;
 }
+statusEl.textContent = 'Autenticado. State: ' + returnedState + '\nToken salvo no Worker.';
+// Guarde o state para futuras chamadas ao proxy
+localStorage.setItem('oauth_state_key', returnedState);
 
-// Clique em “Entrar com Google”
-loginBtn.addEventListener('click', () => {
-  const savedState = localStorage.getItem('oauth_state_key');
-  if (savedState) {
-    // Já autenticado → testar acesso
-    listarDados(savedState);
-    return;
-  }
 
-  const state = randomState(12);
-  localStorage.setItem('oauth_state', state);
-  const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-  authUrl.searchParams.set('client_id', CLIENT_ID);
-  authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
-  authUrl.searchParams.set('response_type', 'code');
-  authUrl.searchParams.set('scope', SCOPES);
-  authUrl.searchParams.set('access_type', 'offline');
-  authUrl.searchParams.set('prompt', 'consent');
-  authUrl.searchParams.set('state', state);
-  window.open(authUrl.toString(), 'google_oauth', 'width=600,height=700');
+// Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
+const SPREADSHEET_ID = '1L0pb0sTyPv1RfPH80pV1j1vZu4Fuf0LugIV7_10MfzI';
+const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
+
+
+const resp = await fetch('https://SEU_WORKER.workers.dev/api/sheets', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ state: returnedState, method: 'GET', endpoint })
 });
 
-// Recebe mensagem do popup
-window.addEventListener('message', (ev) => {
-  if (!ev.data || ev.data.source !== 'oauth_worker') return;
-  const { state: returnedState } = ev.data;
-  localStorage.setItem('oauth_state_key', returnedState);
-  loginBtn.innerText = '✅ Conectado ao Google Sheets';
-  logoutBtn.style.display = 'inline';
-  statusEl.textContent = 'Autenticado com sucesso.\nState: ' + returnedState;
-}, false);
 
-// Função para ler planilha
-async function listarDados(state) {
-  const SPREADSHEET_ID = '1L0pb0sTyPv1RfPH80pV1j1vZu4Fuf0LugIV7_10MfzI';
-  const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
-  statusEl.textContent = 'Consultando planilha...';
-  const resp = await fetch(`${WORKER_URL}/api/sheets`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ state, method: 'GET', endpoint })
-  });
-  const data = await resp.json();
-  statusEl.textContent = 'Resultado da planilha:\n' + JSON.stringify(data, null, 2);
-}
-
-// Função para escrever na planilha
-async function escreverDados(state) {
-  const SPREADSHEET_ID = '1L0pb0sTyPv1RfPH80pV1j1vZu4Fuf0LugIV7_10MfzI';
-  const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A5:B5?valueInputOption=RAW`;
-  const payload = {
-    values: [["Olá do Cloudflare + GitHub Pages", new Date().toLocaleString()]]
-  };
-  const resp = await fetch(`${WORKER_URL}/api/sheets`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ state, method: 'PUT', endpoint, body: payload })
-  });
-  const data = await resp.json();
-  statusEl.textContent = 'Célula escrita com sucesso:\n' + JSON.stringify(data, null, 2);
-}
-
-logoutBtn.addEventListener('click', () => {
-  localStorage.removeItem('oauth_state_key');
-  localStorage.removeItem('oauth_state');
-  loginBtn.innerText = 'Entrar com Google';
-  logoutBtn.style.display = 'none';
-  statusEl.textContent = 'Desconectado.';
+const data = await resp.json();
+statusEl.textContent += '\nResposta da Sheets API:\n' + JSON.stringify(data, null, 2);
+}, { once: false });
 });
 </script>
 </body>
