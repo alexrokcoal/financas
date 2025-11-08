@@ -12,22 +12,22 @@
       googleToken = response.credential;
       console.log("Token recebido do Google:", googleToken);
 
-      // Envia para o Apps Script validar
-      fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: googleToken })
-      })
-      .then(r => r.json())
-      .then(data => {
-        console.log("Login validado:", data);
-        document.getElementById("output").innerText =
-          "✅ Logado como: " + (data.email || data.user) + "\n\nAgora você pode enviar dados.";
+      // // Envia para o Apps Script validar
+      // fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ token: googleToken })
+      // })
+      // .then(r => r.json())
+      // .then(data => {
+      //   console.log("Login validado:", data);
+      //   document.getElementById("output").innerText =
+      //     "✅ Logado como: " + (data.email || data.user) + "\n\nAgora você pode enviar dados.";
 
-        // Exibe o botão de envio
-        document.getElementById("btnSendData").style.display = "inline-block";
-      })
-      .catch(err => console.error(err));
+      //   // Exibe o botão de envio
+      //   document.getElementById("btnSendData").style.display = "inline-block";
+      // })
+      // .catch(err => console.error(err));
     }
 
 
@@ -71,7 +71,7 @@ function enviarLancamento() {
        data-logo_alignment="left">
   </div>
 
-  <button id="btnSendData" style="display:none;" onclick="sendData()">Enviar dados autenticados</button>
+  <button id="btnSendData" style="display:none;" onclick="enviarLancamento()">Enviar dados autenticados</button>
 
   <pre id="output"></pre>
 </body>
