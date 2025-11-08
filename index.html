@@ -1,78 +1,87 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login com Google</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script>
-    let googleToken = null;
-
-    function handleCredentialResponse(response) {
-      googleToken = response.credential;
-      console.log("Token recebido do Google:", googleToken);
-
-      // // Envia para o Apps Script validar
-      // fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ token: googleToken })
-      // })
-      // .then(r => r.json())
-      // .then(data => {
-      //   console.log("Login validado:", data);
-      //   document.getElementById("output").innerText =
-      //     "✅ Logado como: " + (data.email || data.user) + "\n\nAgora você pode enviar dados.";
-
-      //   // Exibe o botão de envio
-      //   document.getElementById("btnSendData").style.display = "inline-block";
-      // })
-      // .catch(err => console.error(err));
-    }
-
-
-// Exemplo de nova chamada autenticada
-function enviarLancamento() {
-  const dados = {
-    descricao: "Café da manhã",
-    valor: 12.5,
-    tipo: "Despesa"
-  };
-
-  fetch("https://gas-proxy.alexro-kcoal.workers.dev", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      id_token: googleToken, // reaproveita o mesmo token do login
-      action: "salvarLancamento",
-      dados
-    })
-  })
-  .then(r => r.json())
-  .then(console.log);
-}
-  </script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sheets OAuth Demo</title>
 </head>
 <body>
-  <h1>Login com Google</h1>
+<h1>Entrar com Google (Sheets)</h1>
+<button id="login">Entrar com Google</button>
+<pre id="status"></pre>
 
-  <div id="g_id_onload"
-       data-client_id="954634376637-r0qfsdbjbqpbrr13pi9tu93j8gu65056.apps.googleusercontent.com"
-       data-callback="handleCredentialResponse"
-       data-auto_prompt="false">
-  </div>
 
-  <div class="g_id_signin"
-       data-type="standard"
-       data-size="large"
-       data-theme="outline"
-       data-text="signin_with"
-       data-shape="rectangular"
-       data-logo_alignment="left">
-  </div>
+<script>
+// Substitua pelo seu CLIENT_ID (público) e pelo REDIRECT (Worker)
+const CLIENT_ID = '954634376637-r0qfsdbjbqpbrr13pi9tu93j8gu65056.apps.googleusercontent.com';
+const REDIRECT_URI = 'https://gas-proxy.alexro-kcoal.workers.dev/callback';
+const SCOPES = [
+'openid',
+'profile',
+'email',
+'https://www.googleapis.com/auth/spreadsheets'
+].join(' ');
 
-  <button id="btnSendData" style="display:none;" onclick="enviarLancamento()">Enviar dados autenticados</button>
 
-  <pre id="output"></pre>
+const statusEl = document.getElementById('status');
+
+
+function randomState(len = 16) {
+const arr = new Uint8Array(len);
+crypto.getRandomValues(arr);
+return Array.from(arr, dec => ('0' + dec.toString(16)).slice(-2)).join('');
+}
+
+
+document.getElementById('login').addEventListener('click', () => {
+const state = randomState(12);
+// Armazene localmente o state para validar se quiser
+localStorage.setItem('oauth_state', state);
+
+
+const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+authUrl.searchParams.set('client_id', CLIENT_ID);
+authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
+authUrl.searchParams.set('response_type', 'code');
+authUrl.searchParams.set('scope', SCOPES);
+authUrl.searchParams.set('access_type', 'offline'); // importante para refresh_token
+authUrl.searchParams.set('prompt', 'consent'); // força pedir refresh_token
+authUrl.searchParams.set('state', state);
+
+
+// Abre popup
+const w = window.open(authUrl.toString(), 'google_oauth', 'width=600,height=700');
+
+
+// Ouça mensagem do popup (Worker irá postar mensagem com { state })
+window.addEventListener('message', async (ev) => {
+if (!ev.data || ev.data.source !== 'oauth_worker') return;
+const { state: returnedState } = ev.data;
+if (returnedState !== localStorage.getItem('oauth_state')) {
+statusEl.textContent = 'State mismatch — abort.';
+return;
+}
+statusEl.textContent = 'Autenticado. State: ' + returnedState + '\nToken salvo no Worker.';
+// Guarde o state para futuras chamadas ao proxy
+localStorage.setItem('oauth_state_key', returnedState);
+
+
+// Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
+const SPREADSHEET_ID = '1L0pb0sTyPv1RfPH80pV1j1vZu4Fuf0LugIV7_10MfzI';
+const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
+
+
+const resp = await fetch('https://SEU_WORKER.workers.dev/api/sheets', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ state: returnedState, method: 'GET', endpoint })
+});
+
+
+const data = await resp.json();
+statusEl.textContent += '\nResposta da Sheets API:\n' + JSON.stringify(data, null, 2);
+}, { once: false });
+});
+</script>
 </body>
 </html>
