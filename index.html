@@ -71,7 +71,7 @@ const SPREADSHEET_ID = '1L0pb0sTyPv1RfPH80pV1j1vZu4Fuf0LugIV7_10MfzI';
 const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
 
 
-const resp = await fetch('https://SEU_WORKER.workers.dev/api/sheets', {
+const resp = await fetch('https://gas-proxy.alexro-kcoal.workers.dev/api/sheets', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ state: returnedState, method: 'GET', endpoint })
