@@ -35,9 +35,6 @@ function randomState(len = 16) {
 
 document.getElementById('login').addEventListener('click', () => {
     const state = randomState(12);
-    // Armazene localmente o state para validar se quiser
-    localStorage.setItem('oauth_state', state);
-
 
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', CLIENT_ID);
@@ -65,14 +62,14 @@ document.getElementById('login').addEventListener('click', () => {
         // Guarde o state para futuras chamadas ao proxy
         localStorage.setItem('oauth_state_key', returnedState);
 
-        lerDados();
+        await lerDados();
 
     }, { once: false });
 
 
 });
 
-function lerDados() {
+async function  lerDados() {
     // Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
     const SPREADSHEET_ID = '1L0pb0sTyPv1RfPH80pV1j1vZu4Fuf0LugIV7_10MfzI';
     const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
@@ -89,8 +86,8 @@ function lerDados() {
     statusEl.textContent += '\nResposta da Sheets API:\n' + JSON.stringify(data, null, 2);
 }
 
-if(localStorage.getItem('oauth_state')) {
-    lerDados();
+if(localStorage.getItem('oauth_state_key')) {
+    await lerDados();
 }
 
 </script>
