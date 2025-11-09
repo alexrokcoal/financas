@@ -27,61 +27,72 @@ const statusEl = document.getElementById('status');
 
 
 function randomState(len = 16) {
-const arr = new Uint8Array(len);
-crypto.getRandomValues(arr);
-return Array.from(arr, dec => ('0' + dec.toString(16)).slice(-2)).join('');
+    const arr = new Uint8Array(len);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, dec => ('0' + dec.toString(16)).slice(-2)).join('');
 }
 
 
 document.getElementById('login').addEventListener('click', () => {
-const state = randomState(12);
-// Armazene localmente o state para validar se quiser
-localStorage.setItem('oauth_state', state);
+    const state = randomState(12);
+    // Armazene localmente o state para validar se quiser
+    localStorage.setItem('oauth_state', state);
 
 
-const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-authUrl.searchParams.set('client_id', CLIENT_ID);
-authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
-authUrl.searchParams.set('response_type', 'code');
-authUrl.searchParams.set('scope', SCOPES);
-authUrl.searchParams.set('access_type', 'offline'); // importante para refresh_token
-authUrl.searchParams.set('prompt', 'consent'); // força pedir refresh_token
-authUrl.searchParams.set('state', state);
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set('client_id', CLIENT_ID);
+    authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('scope', SCOPES);
+    authUrl.searchParams.set('access_type', 'offline'); // importante para refresh_token
+    authUrl.searchParams.set('prompt', 'consent'); // força pedir refresh_token
+    authUrl.searchParams.set('state', state);
 
 
-// Abre popup
-const w = window.open(authUrl.toString(), 'google_oauth', 'width=600,height=700');
+    // Abre popup
+    const w = window.open(authUrl.toString(), 'google_oauth', 'width=600,height=700');
 
 
-// Ouça mensagem do popup (Worker irá postar mensagem com { state })
-window.addEventListener('message', async (ev) => {
-if (!ev.data || ev.data.source !== 'oauth_worker') return;
-const { state: returnedState } = ev.data;
-if (returnedState !== localStorage.getItem('oauth_state')) {
-statusEl.textContent = 'State mismatch — abort.';
-return;
+    // Ouça mensagem do popup (Worker irá postar mensagem com { state })
+    window.addEventListener('message', async (ev) => {
+        if (!ev.data || ev.data.source !== 'oauth_worker') return;
+        const { state: returnedState } = ev.data;
+        if (returnedState !== localStorage.getItem('oauth_state')) {
+        statusEl.textContent = 'State mismatch — abort.';
+        return;
+        }
+        statusEl.textContent = 'Autenticado. State: ' + returnedState + '\nToken salvo no Worker.';
+        // Guarde o state para futuras chamadas ao proxy
+        localStorage.setItem('oauth_state_key', returnedState);
+
+        lerDados();
+
+    }, { once: false });
+
+
+});
+
+function lerDados() {
+    // Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
+    const SPREADSHEET_ID = '1L0pb0sTyPv1RfPH80pV1j1vZu4Fuf0LugIV7_10MfzI';
+    const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
+
+
+    const resp = await fetch('https://gas-proxy.alexro-kcoal.workers.dev/api/sheets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state: returnedState, method: 'GET', endpoint })
+    });
+
+
+    const data = await resp.json();
+    statusEl.textContent += '\nResposta da Sheets API:\n' + JSON.stringify(data, null, 2);
 }
-statusEl.textContent = 'Autenticado. State: ' + returnedState + '\nToken salvo no Worker.';
-// Guarde o state para futuras chamadas ao proxy
-localStorage.setItem('oauth_state_key', returnedState);
 
+if(localStorage.getItem('oauth_state')) {
+    lerDados();
+}
 
-// Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
-const SPREADSHEET_ID = '1L0pb0sTyPv1RfPH80pV1j1vZu4Fuf0LugIV7_10MfzI';
-const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
-
-
-const resp = await fetch('https://gas-proxy.alexro-kcoal.workers.dev/api/sheets', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ state: returnedState, method: 'GET', endpoint })
-});
-
-
-const data = await resp.json();
-statusEl.textContent += '\nResposta da Sheets API:\n' + JSON.stringify(data, null, 2);
-}, { once: false });
-});
 </script>
 </body>
 </html>
