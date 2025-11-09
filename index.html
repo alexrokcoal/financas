@@ -36,6 +36,8 @@ function randomState(len = 16) {
 document.getElementById('login').addEventListener('click', () => {
     const state = randomState(12);
 
+    localStorage.setItem('oauth_state', state)
+
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', CLIENT_ID);
     authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
