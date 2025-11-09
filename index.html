@@ -73,7 +73,7 @@ document.getElementById('login').addEventListener('click', () => {
 
 async function  lerDados(state) {
     // Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
-    const SPREADSHEET_ID = '1L0pb0sTyPv1RfPH80pV1j1vZu4Fuf0LugIV7_10MfzI';
+    const SPREADSHEET_ID = localStorage.getItem('id_planilha');
     const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
 
 
@@ -88,11 +88,19 @@ async function  lerDados(state) {
     statusEl.textContent += '\nResposta da Sheets API:\n' + JSON.stringify(data, null, 2);
 }
 
-var state = localStorage.getItem('oauth_state_key');
+if(!localStorage.getItem('id_planilha')) {
+    let idPlanilha = prompt("Por favor, informe o ID da planilha", "ID da planilha aqui...");
 
-if(state) {
-    lerDados(state);
+    localStorage.setItem('id_planilha', idPlanilha);
+} else {
+    var state = localStorage.getItem('oauth_state_key');
+
+    if(state) {
+        lerDados(state);
+    }
 }
+
+
 
 </script>
 </body>
