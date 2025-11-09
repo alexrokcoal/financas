@@ -92,14 +92,13 @@ if(!localStorage.getItem('id_planilha')) {
     let idPlanilha = prompt("Por favor, informe o ID da planilha", "ID da planilha aqui...");
 
     localStorage.setItem('id_planilha', idPlanilha);
-} else {
-    var state = localStorage.getItem('oauth_state_key');
-
-    if(state) {
-        lerDados(state);
-    }
 }
 
+var state = localStorage.getItem('oauth_state_key');
+
+if(state) {
+    lerDados(state);
+}
 
 
 </script>
