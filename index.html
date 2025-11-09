@@ -64,7 +64,7 @@ document.getElementById('login').addEventListener('click', () => {
         // Guarde o state para futuras chamadas ao proxy
         localStorage.setItem('oauth_state_key', returnedState);
 
-        await lerDados();
+        await lerDados(returnedState);
 
     }, { once: false });
 
