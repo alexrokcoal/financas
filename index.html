@@ -88,7 +88,9 @@
         });
       }
 
-      tryAutoLogin();
+      window.addEventListener("load", () => {
+        tryAutoLogin();
+      });
 
 
       // Função chamada automaticamente quando o usuário clica no botão do Google
