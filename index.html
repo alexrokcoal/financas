@@ -65,42 +65,42 @@
 
 
 
-        const state = randomState(12);
-        localStorage.setItem("oauth_state", state);
+        // const state = randomState(12);
+        // localStorage.setItem("oauth_state", state);
 
-        // O botão do Google só retorna um ID token (JWT), não o código de autorização.
-        // Então, para manter seu fluxo OAuth com code/redirect, usamos o fluxo manual a seguir:
-        const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-        authUrl.searchParams.set("client_id", CLIENT_ID);
-        authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
-        authUrl.searchParams.set("response_type", "code");
-        authUrl.searchParams.set("scope", SCOPES);
-        authUrl.searchParams.set("access_type", "offline");
-        authUrl.searchParams.set("prompt", "consent");
-        authUrl.searchParams.set("state", state);
+        // // O botão do Google só retorna um ID token (JWT), não o código de autorização.
+        // // Então, para manter seu fluxo OAuth com code/redirect, usamos o fluxo manual a seguir:
+        // const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+        // authUrl.searchParams.set("client_id", CLIENT_ID);
+        // authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
+        // authUrl.searchParams.set("response_type", "code");
+        // authUrl.searchParams.set("scope", SCOPES);
+        // authUrl.searchParams.set("access_type", "offline");
+        // authUrl.searchParams.set("prompt", "consent");
+        // authUrl.searchParams.set("state", state);
 
-        // Abre a janela popup do OAuth (como antes)
-        const w = window.open(authUrl.toString(), "google_oauth", "width=600,height=700");
+        // // Abre a janela popup do OAuth (como antes)
+        // const w = window.open(authUrl.toString(), "google_oauth", "width=600,height=700");
 
-        // Escuta a resposta do popup (enviada pelo seu Worker/redirect handler)
-        window.addEventListener(
-          "message",
-          async (ev) => {
-            if (!ev.data || ev.data.source !== "oauth_worker") return;
-            const { state: returnedState } = ev.data;
-            if (returnedState !== localStorage.getItem("oauth_state")) {
-              statusEl.textContent = "State mismatch — abort.";
-              return;
-            }
+        // // Escuta a resposta do popup (enviada pelo seu Worker/redirect handler)
+        // window.addEventListener(
+        //   "message",
+        //   async (ev) => {
+        //     if (!ev.data || ev.data.source !== "oauth_worker") return;
+        //     const { state: returnedState } = ev.data;
+        //     if (returnedState !== localStorage.getItem("oauth_state")) {
+        //       statusEl.textContent = "State mismatch — abort.";
+        //       return;
+        //     }
 
-            statusEl.textContent = "Autenticado! Token salvo no Worker.";
-            localStorage.setItem("oauth_state_key", returnedState);
+        //     statusEl.textContent = "Autenticado! Token salvo no Worker.";
+        //     localStorage.setItem("oauth_state_key", returnedState);
 
-            // Continua seu fluxo (por exemplo, carregar dados da planilha)
-            await lerDados(returnedState);
-          },
-          { once: false }
-        );
+        //     // Continua seu fluxo (por exemplo, carregar dados da planilha)
+        //     await lerDados(returnedState);
+        //   },
+        //   { once: false }
+        // );
       }
 
       async function lerDados(state) {
