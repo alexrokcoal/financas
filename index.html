@@ -178,25 +178,15 @@
           window.location.href = "./login.html";
           return false;
         }
-
-
-        // Checar se existe oauth state
-
-        // Checar rota se existe login no cloudflare oauth:734b1780fccebb0192a68857
-
-        // [Condição] Se ok iniciar a aplicação - Caso contrário apresentar login
       }
 
-      function login() {
-        // Se - Login bem sucedido - Salvar oauth state
+      async function logout() {
+        await fetch("https://meufinanceiro.alexro-kcoal.workers.dev/logout?state=" + localStorage.getItem("oauth_state_key"), {
+          method: "GET"
+        });
 
-        // Iniciar a aplicação
-      }
-
-      function logout() {
-        // Chamar rota logout claudflare
-        // Deletar oauth state
-        // Ir para a tela de login
+        localStorage.removeItem("oauth_state_key");
+        window.location.href = "./login.html";
       }
 
 
