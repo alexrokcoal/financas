@@ -103,7 +103,6 @@
 
 
         const state = randomState(12);
-        localStorage.setItem("oauth_state", state);
 
         // O botão do Google só retorna um ID token (JWT), não o código de autorização.
         // Então, para manter seu fluxo OAuth com code/redirect, usamos o fluxo manual a seguir:
@@ -125,7 +124,7 @@
           async (ev) => {
             if (!ev.data || ev.data.source !== "oauth_worker") return;
             const { state: returnedState } = ev.data;
-            if (returnedState !== localStorage.getItem("oauth_state")) {
+            if (returnedState !== state) {
               statusEl.textContent = "State mismatch — abort.";
               return;
             }
@@ -166,6 +165,32 @@
       if (state) {
         lerDados(state);
       }
+
+
+
+      function loginStatus() {
+        // Checar se existe oauth state
+
+        // Checar rota se existe login no cloudflare oauth:734b1780fccebb0192a68857
+
+        // [Condição] Se ok iniciar a aplicação - Caso contrário apresentar login
+      }
+
+      function login() {
+        // Se - Login bem sucedido - Salvar oauth state
+
+        // Iniciar a aplicação
+      }
+
+      function logout() {
+        // Chamar rota logout claudflare
+        // Deletar oauth state
+        // Ir para a tela de login
+      }
+
+
+
+
     </script>
   </body>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
