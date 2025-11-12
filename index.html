@@ -6,140 +6,10 @@
     <title>Sheets OAuth Demo</title>
   </head>
   <body>
-    <h1>Entrar com Google (Sheets)</h1>
-    <button id="login">Entrar com Google</button>
+    <h1>Aplicação</h1>
     <pre id="status"></pre>
 
-    <!-- <div id="g_id_onload"
-         data-client_id="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-callback="handleGoogleSignIn"
-         data-auto_prompt="true"
-    >
-    </div>
-    <div class="g_id_signin" data-type="standard"></div> -->
-
-
-    <!-- <div>
-      <div
-        id="g_id_onload"
-        data-client_id="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com"
-        data-context="signin"
-        data-ux_mode="redirect"
-        data-callback="handleGoogleSignIn"
-        data-auto_prompt="false"
-      ></div>
-
-      <div
-        class="g_id_signin"
-        data-type="standard"
-        data-shape="rectangular"
-        data-theme="outline"
-        data-text="signin_with"
-        data-size="large"
-      ></div>
-    </div> -->
-
     <script>
-      // Substitua pelo seu CLIENT_ID (público) e pelo REDIRECT (Worker)
-      const CLIENT_ID = "915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com";
-      const REDIRECT_URI = "https://meufinanceiro.alexro-kcoal.workers.dev/callback";
-      const SCOPES = [
-        "openid",
-        "profile",
-        "email",
-        "https://www.googleapis.com/auth/spreadsheets",
-      ].join(" ");
-
-      const statusEl = document.getElementById("status");
-
-      function randomState(len = 16) {
-        const arr = new Uint8Array(len);
-        crypto.getRandomValues(arr);
-        return Array.from(arr, (dec) => ("0" + dec.toString(16)).slice(-2)).join("");
-      }
-
-
-      async function tryAutoLogin() {
-        const state = randomState(12);
-        localStorage.setItem("oauth_state", state);
-
-        const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-        authUrl.searchParams.set("client_id", CLIENT_ID);
-        authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
-        authUrl.searchParams.set("response_type", "code");
-        authUrl.searchParams.set("scope", SCOPES);
-        authUrl.searchParams.set("include_granted_scopes", "true");
-        authUrl.searchParams.set("prompt", "none");
-        authUrl.searchParams.set("state", state);
-
-        // Tenta login silencioso num iframe
-        const iframe = document.createElement("iframe");
-        iframe.src = authUrl.toString();
-        iframe.style.display = "none";
-        document.body.appendChild(iframe);
-
-        window.addEventListener("message", (e) => {
-          if (e.data.source === "oauth_worker") {
-            console.log("Login automático bem-sucedido!");
-            // aqui você continua seu fluxo com e.data.code
-          }
-        });
-      }
-
-      window.addEventListener("load", () => {
-        // tryAutoLogin();
-        checkLogin();
-      });
-
-      document.getElementById("login").addEventListener("click", handleGoogleSignIn);
-
-
-      // Função chamada automaticamente quando o usuário clica no botão do Google
-      function handleGoogleSignIn(response) {
-
-        console.log(response);
-
-
-
-        const state = randomState(12);
-
-        // O botão do Google só retorna um ID token (JWT), não o código de autorização.
-        // Então, para manter seu fluxo OAuth com code/redirect, usamos o fluxo manual a seguir:
-        const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-        authUrl.searchParams.set("client_id", CLIENT_ID);
-        authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
-        authUrl.searchParams.set("response_type", "code");
-        authUrl.searchParams.set("scope", SCOPES);
-        authUrl.searchParams.set("access_type", "offline");
-        authUrl.searchParams.set("prompt", "consent");
-        authUrl.searchParams.set("state", state);
-
-        // Abre a janela popup do OAuth (como antes)
-        const w = window.open(authUrl.toString(), "google_oauth", "width=600,height=700");
-
-        // Escuta a resposta do popup (enviada pelo seu Worker/redirect handler)
-        window.addEventListener(
-          "message",
-          async (ev) => {
-            if (!ev.data || ev.data.source !== "oauth_worker") return;
-            const { state: returnedState } = ev.data;
-            if (returnedState !== state) {
-              statusEl.textContent = "State mismatch — abort.";
-              return;
-            }
-
-            statusEl.textContent = "Autenticado! Token salvo no Worker.";
-            localStorage.setItem("oauth_state_key", returnedState);
-
-            // Continua seu fluxo (por exemplo, carregar dados da planilha)
-            await lerDados(returnedState);
-          },
-          { once: false }
-        );
-      }
-
       async function lerDados(state) {
         // Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
         const SPREADSHEET_ID = localStorage.getItem("id_planilha");
@@ -151,6 +21,8 @@
           body: JSON.stringify({ state: state, method: "GET", endpoint }),
         });
 
+        const statusEl = document.getElementById("status");
+
         const data = await resp.json();
         statusEl.textContent += "\nResposta da Sheets API:\n" + JSON.stringify(data, null, 2);
       }
@@ -160,14 +32,6 @@
 
         localStorage.setItem("id_planilha", idPlanilha);
       }
-
-      var state = localStorage.getItem("oauth_state_key");
-
-      if (state) {
-        lerDados(state);
-      }
-
-
 
       function checkLogin() {
         var oauth_state_key = localStorage.getItem("oauth_state_key");
@@ -189,9 +53,15 @@
         window.location.href = "./login.html";
       }
 
+      window.addEventListener("load", () => {
+        checkLogin();
 
+        var state = localStorage.getItem("oauth_state_key");
 
-
+        if (state) {
+          lerDados(state);
+        }
+      });
     </script>
   </body>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
