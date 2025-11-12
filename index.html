@@ -11,7 +11,10 @@
     <button id="login">Entrar com Google</button>
     <pre id="status"></pre>
 
-    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    <div id="g_id_onload"
+         data-client_id="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com"
+         data-callback="handleGoogleSignIn">
+    </div>
 
 
     <!-- <div>
@@ -51,14 +54,6 @@
         const arr = new Uint8Array(len);
         crypto.getRandomValues(arr);
         return Array.from(arr, (dec) => ("0" + dec.toString(16)).slice(-2)).join("");
-      }
-
-      function onSignIn(googleUser) {
-        var profile = googleUser.getBasicProfile();
-        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-        console.log('Name: ' + profile.getName());
-        console.log('Image URL: ' + profile.getImageUrl());
-        console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
       }
 
       // Função chamada automaticamente quando o usuário clica no botão do Google
@@ -129,5 +124,5 @@
       }
     </script>
   </body>
-  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </html>
