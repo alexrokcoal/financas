@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="google-signin-client_id" content="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com">
     <title>Sheets OAuth Demo</title>
   </head>
   <body>
@@ -10,7 +11,10 @@
     <button id="login">Entrar com Google</button>
     <pre id="status"></pre>
 
-    <div>
+    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+
+
+    <!-- <div>
       <div
         id="g_id_onload"
         data-client_id="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com"
@@ -28,7 +32,7 @@
         data-text="signin_with"
         data-size="large"
       ></div>
-    </div>
+    </div> -->
 
     <script>
       // Substitua pelo seu CLIENT_ID (público) e pelo REDIRECT (Worker)
@@ -47,6 +51,14 @@
         const arr = new Uint8Array(len);
         crypto.getRandomValues(arr);
         return Array.from(arr, (dec) => ("0" + dec.toString(16)).slice(-2)).join("");
+      }
+
+      function onSignIn(googleUser) {
+        var profile = googleUser.getBasicProfile();
+        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+        console.log('Name: ' + profile.getName());
+        console.log('Image URL: ' + profile.getImageUrl());
+        console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
       }
 
       // Função chamada automaticamente quando o usuário clica no botão do Google
@@ -117,5 +129,5 @@
       }
     </script>
   </body>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
 </html>
