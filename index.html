@@ -34,9 +34,9 @@
       }
 
       function checkLogin() {
-        var oauth_state_key = localStorage.getItem("oauth_state_key");
+        var state = localStorage.getItem("state");
 
-        if (typeof oauth_state_key === "string" && oauth_state_key.trim() !== "") {
+        if (typeof state === "string" && state.trim() !== "") {
           return true;
         } else {
           window.location.href = "./login.html";
@@ -45,18 +45,18 @@
       }
 
       async function logout() {
-        await fetch("https://meufinanceiro.alexro-kcoal.workers.dev/logout?state=" + localStorage.getItem("oauth_state_key"), {
+        await fetch("https://meufinanceiro.alexro-kcoal.workers.dev/logout?state=" + localStorage.getItem("state"), {
           method: "GET"
         });
 
-        localStorage.removeItem("oauth_state_key");
+        localStorage.removeItem("state");
         window.location.href = "./login.html";
       }
 
       window.addEventListener("load", () => {
         checkLogin();
 
-        var state = localStorage.getItem("oauth_state_key");
+        var state = localStorage.getItem("state");
 
         if (state) {
           lerDados(state);

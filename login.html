@@ -164,34 +164,19 @@
         authUrl.searchParams.set("prompt", "consent");
         authUrl.searchParams.set("state", state);
 
-        // const w = window.open(
-        //   authUrl.toString(),
-        //   "google_oauth",
-        //   "width=600,height=700"
-        // );
-
          window.location.href = authUrl.toString();
-
-        window.addEventListener(
-          "message",
-          async (ev) => {
-            if (!ev.data || ev.data.source !== "oauth_worker") return;
-            const { state: returnedState } = ev.data;
-            if (returnedState !== state) {
-              statusEl.textContent = "State mismatch — abort.";
-              return;
-            }
-
-            statusEl.textContent = "Autenticado! Redirecionando...";
-            localStorage.setItem("oauth_state_key", returnedState);
-
-            setTimeout(() => {
-              window.location.href = "./index.html";
-            }, 1000);
-          },
-          { once: false }
-        );
       }
+
+
+      window.addEventListener("load", () => {
+        const params = new URLSearchParams(window.location.search);
+        const state = params.get("state");
+
+        if (state) {
+          localStorage.setItem("state", state);
+          window.location.href = "./index.html";
+        }
+      });
     </script>
   </body>
 </html>
