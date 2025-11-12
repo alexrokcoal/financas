@@ -2,6 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login com Google</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
@@ -74,20 +75,22 @@
 
       /* === BOTÃO GOOGLE CUSTOM === */
       .google-btn {
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
-        padding: 10px 16px;
+        padding: 14px 20px; /* aumenta área de toque */
         border: 1px solid #dadce0;
-        border-radius: 4px;
+        border-radius: 6px;
         background-color: #fff;
         color: #3c4043;
         font-family: "Roboto", sans-serif;
-        font-size: 14px;
+        font-size: 16px; /* texto maior */
         font-weight: 500;
         cursor: pointer;
         transition: box-shadow 0.2s ease, background-color 0.2s ease;
+        width: 100%; /* ocupa toda a largura do container */
+        max-width: 320px; /* mas não fica gigante no desktop */
       }
 
       .google-btn:hover {
@@ -96,12 +99,39 @@
       }
 
       .google-icon {
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
       }
+
 
       .google-btn:active {
         background-color: #e8f0fe;
+      }
+
+      @media (max-width: 480px) {
+        .login-card {
+          padding: 30px 20px;
+          max-width: 90%;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        p {
+          font-size: 1rem;
+        }
+
+        .google-btn {
+          font-size: 18px;
+          padding: 16px 24px;
+          max-width: none;
+        }
+
+        .google-icon {
+          width: 24px;
+          height: 24px;
+        }
       }
 
 
