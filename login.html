@@ -150,9 +150,7 @@
         );
       }
 
-      document
-        .querySelector(".g_id_signin")
-        .addEventListener("click", handleGoogleSignIn);
+      document.getElementById("login").addEventListener("click", handleGoogleSignIn);
 
       function handleGoogleSignIn() {
         const state = randomState(12);
