@@ -1,109 +1,105 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Sheets OAuth Demo</title>
-  </head>
-  <body>
-    <h1>Entrar com Google (Sheets)</h1>
-    <button id="login">Entrar com Google</button>
-    <pre id="status"></pre>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Login com Google</title>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <style>
+            body {
+            font-family: "Roboto", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f9f9f9;
+            }
+            #login-container {
+            text-align: center;
+            }
+            #status {
+            margin-top: 16px;
+            color: #555;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Fazer no login</h1>
 
-    <!-- <div id="g_id_onload"
-         data-client_id="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-callback="handleGoogleSignIn"
-         data-auto_prompt="true"
-    >
-    </div>
-    <div class="g_id_signin" data-type="standard"></div> -->
+        <div id="login-container">
+            <div id="g_id_onload"
+                data-client_id="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com"
+                data-context="signin"
+                data-auto_prompt="false"
+            ></div>
+            <div
+                class="g_id_signin"
+                data-type="standard"
+            ></div>
+            <pre id="status"></pre>
+        </div>
 
+        <script>
+            // Substitua pelo seu CLIENT_ID (público) e pelo REDIRECT (Worker)
+            const CLIENT_ID = "915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com";
+            const REDIRECT_URI = "https://meufinanceiro.alexro-kcoal.workers.dev/callback";
+            const SCOPES = [
+                "openid",
+                "profile",
+                "email",
+                "https://www.googleapis.com/auth/spreadsheets",
+            ].join(" ");
 
-    <!-- <div>
-      <div
-        id="g_id_onload"
-        data-client_id="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com"
-        data-context="signin"
-        data-ux_mode="redirect"
-        data-callback="handleGoogleSignIn"
-        data-auto_prompt="false"
-      ></div>
+            const statusEl = document.getElementById("status");
 
-      <div
-        class="g_id_signin"
-        data-type="standard"
-        data-shape="rectangular"
-        data-theme="outline"
-        data-text="signin_with"
-        data-size="large"
-      ></div>
-    </div> -->
-
-    <script>
-      // Substitua pelo seu CLIENT_ID (público) e pelo REDIRECT (Worker)
-      const CLIENT_ID = "915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com";
-      const REDIRECT_URI = "https://meufinanceiro.alexro-kcoal.workers.dev/callback";
-      const SCOPES = [
-        "openid",
-        "profile",
-        "email",
-        "https://www.googleapis.com/auth/spreadsheets",
-      ].join(" ");
-
-      const statusEl = document.getElementById("status");
-
-      function randomState(len = 16) {
-        const arr = new Uint8Array(len);
-        crypto.getRandomValues(arr);
-        return Array.from(arr, (dec) => ("0" + dec.toString(16)).slice(-2)).join("");
-      }
-
-
-
-      document.getElementById("login").addEventListener("click", handleGoogleSignIn);
-
-
-      // Função chamada automaticamente quando o usuário clica no botão do Google
-      function handleGoogleSignIn() {
-        const state = randomState(12);
-
-        // O botão do Google só retorna um ID token (JWT), não o código de autorização.
-        // Então, para manter seu fluxo OAuth com code/redirect, usamos o fluxo manual a seguir:
-        const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-        authUrl.searchParams.set("client_id", CLIENT_ID);
-        authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
-        authUrl.searchParams.set("response_type", "code");
-        authUrl.searchParams.set("scope", SCOPES);
-        authUrl.searchParams.set("access_type", "offline");
-        authUrl.searchParams.set("prompt", "consent");
-        authUrl.searchParams.set("state", state);
-
-        // Abre a janela popup do OAuth (como antes)
-        const w = window.open(authUrl.toString(), "google_oauth", "width=600,height=700");
-
-        // Escuta a resposta do popup (enviada pelo seu Worker/redirect handler)
-        window.addEventListener(
-          "message",
-          async (ev) => {
-            if (!ev.data || ev.data.source !== "oauth_worker") return;
-            const { state: returnedState } = ev.data;
-            if (returnedState !== state) {
-              statusEl.textContent = "State mismatch — abort.";
-              return;
+            function randomState(len = 16) {
+                const arr = new Uint8Array(len);
+                crypto.getRandomValues(arr);
+                return Array.from(arr, (dec) => ("0" + dec.toString(16)).slice(-2)).join("");
             }
 
-            statusEl.textContent = "Autenticado! Token salvo no Worker.";
-            localStorage.setItem("oauth_state_key", returnedState);
 
-            
-            window.location.href = "./index.html";
-          },
-          { once: false }
-        );
-      }
-    </script>
-  </body>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+            document.getElementById("login").addEventListener("click", handleGoogleSignIn);
+
+
+            // Função chamada automaticamente quando o usuário clica no botão do Google
+            function handleGoogleSignIn() {
+                const state = randomState(12);
+
+                // O botão do Google só retorna um ID token (JWT), não o código de autorização.
+                // Então, para manter seu fluxo OAuth com code/redirect, usamos o fluxo manual a seguir:
+                const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+                authUrl.searchParams.set("client_id", CLIENT_ID);
+                authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
+                authUrl.searchParams.set("response_type", "code");
+                authUrl.searchParams.set("scope", SCOPES);
+                authUrl.searchParams.set("access_type", "offline");
+                authUrl.searchParams.set("prompt", "consent");
+                authUrl.searchParams.set("state", state);
+
+                // Abre a janela popup do OAuth (como antes)
+                const w = window.open(authUrl.toString(), "google_oauth", "width=600,height=700");
+
+                // Escuta a resposta do popup (enviada pelo seu Worker/redirect handler)
+                window.addEventListener(
+                "message",
+                async (ev) => {
+                    if (!ev.data || ev.data.source !== "oauth_worker") return;
+                    const { state: returnedState } = ev.data;
+                    if (returnedState !== state) {
+                    statusEl.textContent = "State mismatch — abort.";
+                    return;
+                    }
+
+                    statusEl.textContent = "Autenticado! Token salvo no Worker.";
+                    localStorage.setItem("oauth_state_key", returnedState);
+
+                    
+                    window.location.href = "./index.html";
+                },
+                { once: false }
+                );
+            }
+        </script>
+    </body>
 </html>
