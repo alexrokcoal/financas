@@ -60,6 +60,11 @@
 
       // Função chamada automaticamente quando o usuário clica no botão do Google
       function handleGoogleSignIn(response) {
+
+        console.log(response);
+
+
+
         const state = randomState(12);
         localStorage.setItem("oauth_state", state);
 
