@@ -89,7 +89,8 @@
       }
 
       window.addEventListener("load", () => {
-        tryAutoLogin();
+        // tryAutoLogin();
+        checkLogin();
       });
 
       document.getElementById("login").addEventListener("click", handleGoogleSignIn);
@@ -168,7 +169,18 @@
 
 
 
-      function loginStatus() {
+      function checkLogin() {
+        var oauth_state_key = localStorage.getItem("oauth_state_key");
+
+        if (typeof oauth_state_key === "string" && oauth_state_key.trim() !== "") {
+          return true;
+        } else {
+          console.log("Não foi encontrado um login ativo! Redirecionando para a tela de login...");
+          window.location.href = "login.html";
+          return false;
+        }
+
+
         // Checar se existe oauth state
 
         // Checar rota se existe login no cloudflare oauth:734b1780fccebb0192a68857
