@@ -92,6 +92,8 @@
         tryAutoLogin();
       });
 
+      document.getElementById("login").addEventListener("click", handleGoogleSignIn);
+
 
       // Função chamada automaticamente quando o usuário clica no botão do Google
       function handleGoogleSignIn(response) {
