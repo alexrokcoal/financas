@@ -175,7 +175,6 @@
         if (typeof oauth_state_key === "string" && oauth_state_key.trim() !== "") {
           return true;
         } else {
-          console.log("Não foi encontrado um login ativo! Redirecionando para a tela de login...");
           window.location.href = "login.html";
           return false;
         }
