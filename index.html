@@ -1,106 +1,121 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sheets OAuth Demo</title>
-</head>
-<body>
-<h1>Entrar com Google (Sheets)</h1>
-<button id="login">Entrar com Google</button>
-<pre id="status"></pre>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sheets OAuth Demo</title>
+  </head>
+  <body>
+    <h1>Entrar com Google (Sheets)</h1>
+    <button id="login">Entrar com Google</button>
+    <pre id="status"></pre>
 
+    <div>
+      <div
+        id="g_id_onload"
+        data-client_id="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com"
+        data-context="signin"
+        data-ux_mode="popup"
+        data-callback="handleGoogleSignIn"
+        data-auto_prompt="false"
+      ></div>
 
-<script>
-// Substitua pelo seu CLIENT_ID (público) e pelo REDIRECT (Worker)
-const CLIENT_ID = '915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com';
-const REDIRECT_URI = 'https://meufinanceiro.alexro-kcoal.workers.dev/callback';
-const SCOPES = [
-'openid',
-'profile',
-'email',
-'https://www.googleapis.com/auth/spreadsheets'
-].join(' ');
+      <div
+        class="g_id_signin"
+        data-type="standard"
+        data-shape="rectangular"
+        data-theme="outline"
+        data-text="signin_with"
+        data-size="large"
+      ></div>
+    </div>
 
+    <script>
+      // Substitua pelo seu CLIENT_ID (público) e pelo REDIRECT (Worker)
+      const CLIENT_ID = "915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com";
+      const REDIRECT_URI = "https://meufinanceiro.alexro-kcoal.workers.dev/callback";
+      const SCOPES = [
+        "openid",
+        "profile",
+        "email",
+        "https://www.googleapis.com/auth/spreadsheets",
+      ].join(" ");
 
-const statusEl = document.getElementById('status');
+      const statusEl = document.getElementById("status");
 
+      function randomState(len = 16) {
+        const arr = new Uint8Array(len);
+        crypto.getRandomValues(arr);
+        return Array.from(arr, (dec) => ("0" + dec.toString(16)).slice(-2)).join("");
+      }
 
-function randomState(len = 16) {
-    const arr = new Uint8Array(len);
-    crypto.getRandomValues(arr);
-    return Array.from(arr, dec => ('0' + dec.toString(16)).slice(-2)).join('');
-}
+      // Função chamada automaticamente quando o usuário clica no botão do Google
+      function handleGoogleSignIn(response) {
+        const state = randomState(12);
+        localStorage.setItem("oauth_state", state);
 
+        // O botão do Google só retorna um ID token (JWT), não o código de autorização.
+        // Então, para manter seu fluxo OAuth com code/redirect, usamos o fluxo manual a seguir:
+        const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+        authUrl.searchParams.set("client_id", CLIENT_ID);
+        authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
+        authUrl.searchParams.set("response_type", "code");
+        authUrl.searchParams.set("scope", SCOPES);
+        authUrl.searchParams.set("access_type", "offline");
+        authUrl.searchParams.set("prompt", "consent");
+        authUrl.searchParams.set("state", state);
 
-document.getElementById('login').addEventListener('click', () => {
-    const state = randomState(12);
+        // Abre a janela popup do OAuth (como antes)
+        const w = window.open(authUrl.toString(), "google_oauth", "width=600,height=700");
 
-    localStorage.setItem('oauth_state', state)
+        // Escuta a resposta do popup (enviada pelo seu Worker/redirect handler)
+        window.addEventListener(
+          "message",
+          async (ev) => {
+            if (!ev.data || ev.data.source !== "oauth_worker") return;
+            const { state: returnedState } = ev.data;
+            if (returnedState !== localStorage.getItem("oauth_state")) {
+              statusEl.textContent = "State mismatch — abort.";
+              return;
+            }
 
-    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-    authUrl.searchParams.set('client_id', CLIENT_ID);
-    authUrl.searchParams.set('redirect_uri', REDIRECT_URI);
-    authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('scope', SCOPES);
-    authUrl.searchParams.set('access_type', 'offline'); // importante para refresh_token
-    authUrl.searchParams.set('prompt', 'consent'); // força pedir refresh_token
-    authUrl.searchParams.set('state', state);
+            statusEl.textContent = "Autenticado! Token salvo no Worker.";
+            localStorage.setItem("oauth_state_key", returnedState);
 
+            // Continua seu fluxo (por exemplo, carregar dados da planilha)
+            await lerDados(returnedState);
+          },
+          { once: false }
+        );
+      }
 
-    // Abre popup
-    const w = window.open(authUrl.toString(), 'google_oauth', 'width=600,height=700');
+      async function lerDados(state) {
+        // Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
+        const SPREADSHEET_ID = localStorage.getItem("id_planilha");
+        const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
 
+        const resp = await fetch("https://meufinanceiro.alexro-kcoal.workers.dev/api/sheets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ state: state, method: "GET", endpoint }),
+        });
 
-    // Ouça mensagem do popup (Worker irá postar mensagem com { state })
-    window.addEventListener('message', async (ev) => {
-        if (!ev.data || ev.data.source !== 'oauth_worker') return;
-        const { state: returnedState } = ev.data;
-        if (returnedState !== localStorage.getItem('oauth_state')) {
-        statusEl.textContent = 'State mismatch — abort.';
-        return;
-        }
-        statusEl.textContent = 'Autenticado. State: ' + returnedState + '\nToken salvo no Worker.';
-        // Guarde o state para futuras chamadas ao proxy
-        localStorage.setItem('oauth_state_key', returnedState);
+        const data = await resp.json();
+        statusEl.textContent += "\nResposta da Sheets API:\n" + JSON.stringify(data, null, 2);
+      }
 
-        await lerDados(returnedState);
+      if (!localStorage.getItem("id_planilha")) {
+        let idPlanilha = prompt("Por favor, informe o ID da planilha", "ID da planilha aqui...");
 
-    }, { once: false });
+        localStorage.setItem("id_planilha", idPlanilha);
+      }
 
+      var state = localStorage.getItem("oauth_state_key");
 
-});
-
-async function  lerDados(state) {
-    // Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
-    const SPREADSHEET_ID = localStorage.getItem('id_planilha');
-    const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
-
-
-    const resp = await fetch('https://meufinanceiro.alexro-kcoal.workers.dev/api/sheets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ state: state, method: 'GET', endpoint })
-    });
-
-
-    const data = await resp.json();
-    statusEl.textContent += '\nResposta da Sheets API:\n' + JSON.stringify(data, null, 2);
-}
-
-if(!localStorage.getItem('id_planilha')) {
-    let idPlanilha = prompt("Por favor, informe o ID da planilha", "ID da planilha aqui...");
-
-    localStorage.setItem('id_planilha', idPlanilha);
-}
-
-var state = localStorage.getItem('oauth_state_key');
-
-if(state) {
-    lerDados(state);
-}
-
-
-</script>
-</body>
+      if (state) {
+        lerDados(state);
+      }
+    </script>
+  </body>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </html>
