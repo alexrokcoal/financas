@@ -56,9 +56,16 @@
       }
 
       window.addEventListener("load", () => {
+        const params = new URLSearchParams(window.location.search);
+        const redirectState = params.get("state");
+
+        if (redirectState) {
+          localStorage.setItem("state", redirectState);
+        }
+        
         checkLogin();
 
-        var state = localStorage.getItem("state");
+        state = localStorage.getItem("state");
 
         if (state) {
           lerDados(state);
