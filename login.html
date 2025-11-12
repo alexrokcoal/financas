@@ -71,6 +71,40 @@
         font-size: 0.8rem;
         color: white;
       }
+
+      /* === BOTÃO GOOGLE CUSTOM === */
+      .google-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        background-color: #fff;
+        color: #3c4043;
+        font-family: "Roboto", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: box-shadow 0.2s ease, background-color 0.2s ease;
+      }
+
+      .google-btn:hover {
+        background-color: #f8faff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .google-icon {
+        width: 18px;
+        height: 18px;
+      }
+
+      .google-btn:active {
+        background-color: #e8f0fe;
+      }
+
+
     </style>
   </head>
   <body>
@@ -79,12 +113,14 @@
       <p>Entre com sua conta Google para continuar</p>
 
       <div id="login-container">
-        <div
-          id="g_id_onload"
-          data-client_id="915311626942-var3kvc86uqhcvrujjs2597ba81l1o6o.apps.googleusercontent.com"
-          data-auto_prompt="false"
-        ></div>
-        <div class="g_id_signin" data-type="standard"></div>
+        <button id="login" class="google-btn">
+          <img
+            class="google-icon"
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google logo"
+          />
+          Entrar com Google
+        </button>
         <pre id="status"></pre>
       </div>
     </div>
