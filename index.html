@@ -13,7 +13,7 @@
       async function lerDados(state) {
         // Exemplo: ler range A1:B2 de uma planilha (substitua SPREADSHEET_ID)
         const SPREADSHEET_ID = localStorage.getItem("id_planilha");
-        const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:B2`;
+        const endpoint = `spreadsheets/${SPREADSHEET_ID}/values/A1:J11`;
 
         const resp = await fetch("https://meufinanceiro.alexro-kcoal.workers.dev/api/sheets", {
           method: "POST",
