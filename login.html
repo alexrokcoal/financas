@@ -164,11 +164,13 @@
         authUrl.searchParams.set("prompt", "consent");
         authUrl.searchParams.set("state", state);
 
-        const w = window.open(
-          authUrl.toString(),
-          "google_oauth",
-          "width=600,height=700"
-        );
+        // const w = window.open(
+        //   authUrl.toString(),
+        //   "google_oauth",
+        //   "width=600,height=700"
+        // );
+
+         window.location.href = authUrl.toString();
 
         window.addEventListener(
           "message",
